@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 
+#include "../proxy_cache/cache.h"
+
 #define MAX_LINE    8192        /* 8KB line buffer */
 #define MAX_BUF     1048576     /* 1MB buffer size */
 #define PORT_LEN    10          /* 10B port length */
@@ -28,7 +30,8 @@ int
 parse_request(int clientfd, Request *client_request);
 
 int
-forward_client_request(const Request *client_request, Response *server_response);
+forward_client_request(const Request *client_request, Cache *proxy_cache,
+                       Response *server_response);
 
 int
 forward_server_response(int clientfd, const Response *server_response);

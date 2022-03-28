@@ -70,30 +70,45 @@ parse_request(int clientfd, Request *client_request)
 }
 
 int
-forward_client_request(const Request *client_request, Response *server_response)
+forward_client_request(const Request *client_request, Cache *proxy_cache,
+                       Response *server_response)
 {
-    int connfd;
+    int connfd, is_cached;
     char request_line[MAX_LINE], request_hdrs[MAX_BUF];
-
-    /* Establish TCP connection with the server */
-    connfd = open_clientfd(client_request->rq_hostname, client_request->rq_port);
-    if (connfd < 0)
-        return -1;
 
     /* Build the HTTP request line to be sent to the server */
     build_request_line(client_request, request_line);
     /* Build the HTTP request headers to be sent to the server */
     build_request_hdrs(client_request, request_hdrs);
 
-    /* Send the http request to the server */
-    if (sio_writen(connfd, request_line, strlen(request_line)) < 0)
-        return -1;
-    if (sio_writen(connfd, request_hdrs, strlen(request_hdrs)) < 0)
-        return -1;
+    is_cached = cache_fetch(proxy_cache, request_line, request_hdrs, 
+                            &server_response->rs_line, &server_response->rs_hdrs, 
+                            &server_response->rs_content, 
+                            &server_response->rs_content_length);
 
-    /* Parse the server's response */
-    if (parse_response(connfd, server_response) < 0)
-        return -1;
+    if (!is_cached) {
+        /* Establish TCP connection with the server */
+        connfd = open_clientfd(client_request->rq_hostname, 
+                               client_request->rq_port);
+        if (connfd < 0)
+            return -1;
+
+        /* Send the http request to the server */
+        if (sio_writen(connfd, request_line, strlen(request_line)) < 0)
+            return -1;
+        if (sio_writen(connfd, request_hdrs, strlen(request_hdrs)) < 0)
+            return -1;
+
+        /* Parse the server's response */
+        if (parse_response(connfd, server_response) < 0)
+            return -1;
+
+        /* Add the response to the cache */
+        cache_write(proxy_cache, request_line, request_hdrs,
+                            server_response->rs_line, server_response->rs_hdrs, 
+                            server_response->rs_content, 
+                            server_response->rs_content_length);
+    } 
 
     return 0;
 }
