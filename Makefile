@@ -4,24 +4,25 @@ CC = gcc
 CFLAGS = -g -Wall
 LDFLAGS = -lpthread
 
-PROXY = proxy.c
-SIO = $(wildcard safe_io/sio.c)
-SOCKET_INTERFACE = $(wildcard socket_interface/interface.c)
-PROXY_SERVE = $(wildcard proxy_serve/serve.c)
-PROXY_CACHE = $(wildcard proxy_cache/cache.c)
+PROXY = src/proxy.c
+SIO = src/safe_io/sio.c
+SOCKET_INTERFACE = src/socket_interface/interface.c
+PROXY_SERVE = src/proxy_serve/serve.c
+PROXY_CACHE = src/proxy_cache/cache.c
+HEADERS = $(wildcard src/**/*.h)
 
 all: proxy
 
-sio.o: $(SIO)
+sio.o: $(SIO) $(HEADERS)
 	$(CC) $(CFLAGS) -c $(SIO)
 
-interface.o: $(SOCKET_INTERFACE)
+interface.o: $(SOCKET_INTERFACE) $(HEADERS)
 	$(CC) $(CFLAGS) -c $(SOCKET_INTERFACE)
 
-serve.o: $(PROXY_SERVE)
+serve.o: $(PROXY_SERVE) $(HEADERS)
 	$(CC) $(CFLAGS) -c $(PROXY_SERVE)
 
-cache.o: $(PROXY_CACHE)
+cache.o: $(PROXY_CACHE) $(HEADERS)
 	$(CC) $(CFLAGS) -c $(PROXY_CACHE)
 
 proxy.o: $(PROXY)
