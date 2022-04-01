@@ -1,0 +1,4 @@
+http://www.example.com
+http://www.go.com
+http://www.washington.edu
+http://www.internic.com
