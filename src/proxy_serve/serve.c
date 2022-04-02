@@ -249,7 +249,7 @@ build_request_line(const Request *request, char *request_line)
 static void
 build_request_hdrs(const Request *request, char *request_hdrs)
 {
-     char linebuf[MAX_LINE];
+    char linebuf[MAX_LINE];
 
     request_hdrs[0] = '\0';
 
