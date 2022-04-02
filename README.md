@@ -91,8 +91,12 @@ make
 
 **2) Connect to the proxy and send an HTTP request to the server using:**
 - **telnet:**
+    - Use the following command to connect to the proxy:
     ```
     telnet localhost <port>
+    ```
+    - Write an HTTP request line, for ex:
+    ```
     GET http://www.example.com HTTP/1.0
     ```
 - **browser:**
