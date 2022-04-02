@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "serve.h"
 #include "../safe_io/sio.h"
@@ -54,10 +55,10 @@ parse_request(int clientfd, Request *client_request)
     if (parse_request_line(&sio, method, url) < 0)
         return -1;
 
+    parse_url(url, hostname, port, path);
+
     if (parse_request_hdrs(&sio, request_hdrs, hostname) < 0)
         return -1;
-
-    parse_url(url, hostname, port, path);
 
     /* Build the client request struct */
     client_request->rq_method = strdup(method);
@@ -108,6 +109,9 @@ forward_client_request(const Request *client_request, Cache *proxy_cache,
                             server_response->rs_line, server_response->rs_hdrs, 
                             server_response->rs_content, 
                             server_response->rs_content_length);
+
+        /* Close the connection with the server after parsing the response */
+        close(connfd);
     } 
 
     return 0;
@@ -245,7 +249,15 @@ build_request_line(const Request *request, char *request_line)
 static void
 build_request_hdrs(const Request *request, char *request_hdrs)
 {
+     char linebuf[MAX_LINE];
+
     request_hdrs[0] = '\0';
+
+    /* Append Host header if it does not exist in request headers */
+    if (!strstr(request->rq_hdrs, "Host: ")) {
+        sprintf(linebuf, "Host: %s\r\n", request->rq_hostname);
+        strcat(request_hdrs, linebuf);
+    }
     strcat(request_hdrs, user_agent_hdr);
     strcat(request_hdrs, conn_hdr);
     strcat(request_hdrs, proxy_conn_hdr);
