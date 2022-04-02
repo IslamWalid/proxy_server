@@ -8,9 +8,6 @@
 static ssize_t
 sio_read(Sio *sio, char *usrbuf, size_t n);
 
-static const char *broken_pipe_msg = "broken pipe: writing to a connection that has already been closed by the client";
-static const char *read_error_msg = "Read error: reading from a socket that has been prematurely close";
-
 /*
  * sio_initbuf - Associate a descriptor with a read buffer and reset buffer
  */
@@ -86,7 +83,6 @@ sio_writen(int fd, void *usrbuf, size_t n)
 	        if (errno == EINTR) {           /* Interrupted by sig handler return */
 	    	    nwritten = 0;               /* and call write() again */
             } else if (errno == EPIPE) {    /* Interrupted by SIGPIPE */
-                fprintf(stderr, "%s\n", broken_pipe_msg);
                 errno = 0;              /* Reset errno */     
                 return -1;
             } else {
@@ -119,7 +115,6 @@ sio_read(Sio *sio, char *usrbuf, size_t n)
 	        if (errno != EINTR) {/* Interrupted by sig handler return */
 	    	    return -1;
             } else if (errno == ECONNRESET) {
-                fprintf(stderr, "%s\n", read_error_msg);
                 errno = 0;
                 return -1;
             }
