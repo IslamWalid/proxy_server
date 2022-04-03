@@ -10,8 +10,6 @@
 #include "proxy_serve/serve.h"
 #include "socket_interface/interface.h"
 
-#define safe_free(ptr) sfree((void **) &(ptr))
-
 typedef struct sockaddr SA;
 
 typedef struct vargp {
@@ -24,9 +22,6 @@ client_serve(void *vargp);
 
 static void
 free_resources(Request *request, Response *response);
-
-static void
-sfree(void **ptr);
 
 int 
 main(int argc, char **argv)
@@ -100,22 +95,27 @@ client_serve(void *vargp)
 static void
 free_resources(Request *request, Response *response)
 {
-    safe_free(request->rq_method);
-    safe_free(request->rq_hostname);
-    safe_free(request->rq_port);
-    safe_free(request->rq_path);
-    safe_free(request->rq_hdrs);
+    if (request->rq_method)
+        free(request->rq_method);
 
-    safe_free(response->rs_line);
-    safe_free(response->rs_hdrs);
-    safe_free(response->rs_content);
-}
+    if (request->rq_hostname)
+        free(request->rq_hostname);
 
-static void
-sfree(void **ptr)
-{
-    if (ptr != NULL && *ptr != NULL) {
-        free(*ptr);
-        *ptr = NULL;
-    }
+    if (request->rq_port)
+        free(request->rq_port);
+
+    if (request->rq_path)
+        free(request->rq_path);
+
+    if (request->rq_hdrs)
+        free(request->rq_hdrs);
+
+    if (response->rs_line)
+        free(response->rs_line);
+
+    if (response->rs_hdrs)
+        free(response->rs_hdrs);
+
+    if (response->rs_content)
+        free(response->rs_content);
 }
