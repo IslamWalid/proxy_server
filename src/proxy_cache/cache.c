@@ -16,6 +16,9 @@ find_victim(Cache *cache);
 static int
 find_line(Cache *cache, unsigned int tag);
 
+static void
+destruct_line(Cache *cache, int idx);
+
 void
 cache_init(Cache *cache)
 {
@@ -35,32 +38,38 @@ cache_write(Cache *cache, const char *request_line, const char *request_hdrs,
     int idx;
     unsigned int tag; 
     size_t object_size;
+    char *response_line_copy, *response_hdrs_copy;
+    void *content_copy;
 
     object_size = content_len + strlen(response_line) + strlen(response_hdrs);
     /* Check if the total size of the object not exceeding the MAX_OBJECT_SIZE */
     if (object_size > MAX_OBJECT_SIZE)
         return;
 
-    /* Create copy to be cached */
     tag = generate_tag(request_line, request_hdrs);
+    response_line_copy = strdup(response_line);
+    response_hdrs_copy = strdup(response_hdrs);
+    content_copy = malloc(content_len);
+    memcpy(content_copy, content, content_len);
 
     /* Acquire the the write mutex to protect writing process */
     sem_wait(&cache->write_mutex);
 
     /* Find empty cache line */
     idx = find_empty_line(cache);
-    if (idx < 0)
+    if (idx < 0) {
         idx = find_victim(cache);
+        destruct_line(cache, idx);
+    }
     
     /* Place cache line */
     cache->cache_set[idx].valid = 1;
     cache->cache_set[idx].tag = tag;
     cache->cache_set[idx].timestamp = ++cache->highest_timestamp;
     cache->cache_set[idx].content_len = content_len;
-    cache->cache_set[idx].response_line = strdup(response_line);
-    cache->cache_set[idx].response_hdrs = strdup(response_hdrs);
-    cache->cache_set[idx].content = malloc(content_len);
-    memcpy(cache->cache_set[idx].content, content, content_len);
+    cache->cache_set[idx].response_line = response_line_copy;
+    cache->cache_set[idx].response_hdrs = response_hdrs_copy;
+    cache->cache_set[idx].content = content_copy;
 
     /* Release the write_mutex */
     sem_post(&cache->write_mutex);
@@ -99,7 +108,6 @@ cache_fetch(Cache *cache, const char *request_line, const char *request_hdrs,
         sem_post(&cache->timestamp_mutex);
     }
 
-    
     sem_wait(&cache->readcnt_mutex);
     cache->readcnt--;
     if (cache->readcnt == 0)    /* Last out */
@@ -154,11 +162,6 @@ find_victim(Cache *cache)
         }
     }
 
-    /* Free the memory used by the victim line */
-    free(cache->cache_set[idx].response_line);
-    free(cache->cache_set[idx].response_hdrs);
-    free(cache->cache_set[idx].content);
-
     return idx;
 }
 
@@ -173,3 +176,10 @@ find_line(Cache *cache, unsigned int tag)
     return -1;
 }
 
+static void
+destruct_line(Cache *cache, int idx)
+{
+    free(cache->cache_set[idx].response_line);
+    free(cache->cache_set[idx].response_hdrs);
+    free(cache->cache_set[idx].content);
+}
