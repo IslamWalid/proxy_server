@@ -28,14 +28,14 @@ sio_readn(Sio *sio, void *usrbuf, size_t n)
     size_t nleft = n;
     ssize_t nread;
     char *bufp = usrbuf;
-    
+
     while (nleft > 0) {
-	    if ((nread = sio_read(sio, bufp, nleft)) < 0) 
+        if ((nread = sio_read(sio, bufp, nleft)) < 0) 
             return -1;          /* errno set by read() */ 
-	    else if (nread == 0)
-	        break;              /* EOF */
-	    nleft -= nread;
-	    bufp += nread;
+        else if (nread == 0)
+            break;              /* EOF */
+        nleft -= nread;
+        bufp += nread;
     }
     return (n - nleft);         /* return >= 0 */
 }
@@ -51,18 +51,19 @@ sio_read_line(Sio *sio, void *usrbuf, size_t maxlen)
 
     for (n = 1; n < maxlen; n++) { 
         if ((rc = sio_read(sio, &c, 1)) == 1) {
-	    *bufp++ = c;
-	    if (c == '\n') {
+            *bufp++ = c;
+            if (c == '\n') {
                 n++;
-     		break;
+                break;
             }
-	} else if (rc == 0) {
-	    if (n == 1)
-		return 0;       /* EOF, no data read */
-	    else
-		break;          /* EOF, some data was read */
-	} else
-	    return -1;	    /* Error */
+        } else if (rc == 0) {
+            if (n == 1)
+                return 0;       /* EOF, no data read */
+            else
+                break;          /* EOF, some data was read */
+        } else {
+            return -1;	    /* Error */
+        }
     }
     *bufp = 0;
     return n-1;
@@ -112,7 +113,7 @@ sio_read(Sio *sio, char *usrbuf, size_t n)
 	    sio->sio_cnt = read(sio->sio_fd, sio->sio_buf, 
 	    		   sizeof(sio->sio_buf));
 	    if (sio->sio_cnt < 0) {
-	        if (errno != EINTR) {/* Interrupted by sig handler return */
+	        if (errno != EINTR) {   /* Interrupted by sig handler return */
 	    	    return -1;
             } else if (errno == ECONNRESET) {
                 errno = 0;
