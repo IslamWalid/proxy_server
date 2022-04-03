@@ -101,6 +101,6 @@ make
     ```
 - **browser:**
     - Change your browser settings to connect to the proxy.
-    - Connect to an HTTP website, for ex: `http//www.example.com`
+    - Connect to an HTTP website, for ex: `http://www.example.com`
 
 **NOTE:** Connect to http websites (ex: websites mentioned [here](https://github.com/IslamWalid/proxy_server/blob/master/http_web_sites.txt)), or use [tiny_web_server](https://github.com/IslamWalid/tiny_web_server) which I developed to be used in testing this proxy.
