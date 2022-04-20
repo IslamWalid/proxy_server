@@ -75,7 +75,7 @@ browser.
 - `make`
 
 ## How to test and use it?
-**1) Download, compile and run the source code as following:**
+**1) Download, compile and run the source code as follows:**
 ```
 git clone https://github.com/IslamWalid/proxy_server.git
 ```
