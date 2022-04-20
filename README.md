@@ -24,7 +24,7 @@ browser.
 
     1) ***Open*** a listen port to receive connection requests from clients.
     2) ***Create*** and initialize a cache to be shared between all worker threads.
-    3) ***Accept*** and establish connection with each client.
+    3) ***Accept*** and establish a connection with each client.
     4) ***Create*** a thread and pass the shared cache and the client file descriptor to it.
 
 - The **`serve`** function does the following steps:
