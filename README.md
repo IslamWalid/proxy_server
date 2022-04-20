@@ -1,28 +1,28 @@
 # Proxy Server
 A **Web proxy** is a program that acts as a **middleman** between a Web browser and an end server. Instead of
 contacting the end server directly to get a Web page, the browser contacts the proxy, which forwards the
-request on to the end server. When the end server replies to the proxy, the proxy sends the reply on to the
+request to the end server. When the end server replies to the proxy, the proxy sends the reply to the
 browser.
 
 ## Overview
 - It is the 7th and the last lab of [15-213: Introduction to Computer Systems](https://www.cs.cmu.edu/afs/cs.cmu.edu/academic/class/15213-f15/www/index.html).
-- The coding style and convention is inspired from [suckless coding style](https://suckless.org/coding_style/).
+- The coding style and convention are inspired by [suckless coding style](https://suckless.org/coding_style/).
 - It is a `multi-threaded` program to be capable of handling multiple connections at the same time.
 - It can cache web objects by storing copies of the responses it gets from the server to use it to respond immediately to any future connections to the same server. Its cache follows LRU eviction policy.
 
 **NOTE:** All project specifications are described in [ProxyLab write-up](https://github.com/IslamWalid/proxy_server/blob/master/proxylab.pdf).
 
-## How this proxy works?
+## How does this proxy work?
 - The main thread accepts connect requests from clients.
-- For each client, the main thread creates a thread and pass the file descriptor of the client to be serverd.
-- All created threads dipatches itself after freeing the resources it allocated for serving the client.
+- For each client, the main thread creates a thread and passes the file descriptor of the client to be served.
+- All created threads detach themselves after freeing the resources allocated for serving the client.
 
 ## Program modules and implementation details
 **[`proxy.c`](https://github.com/IslamWalid/proxy_server/blob/master/src/proxy.c) contains the `main` function, as well as `serve` function as described below:**
 
 - The **`main`** function does the following steps:
 
-    1) ***Open*** a listen port to recieve connection requests from clients.
+    1) ***Open*** a listen port to receive connection requests from clients.
     2) ***Create*** and initialize a cache to be shared between all worker threads.
     3) ***Accept*** and establish connection with each client.
     4) ***Create*** a thread and pass the shared cache and the client file descriptor to it.
@@ -58,7 +58,7 @@ browser.
         1) ***Send*** the response back to the client.
 
 **[`safe_io`](https://github.com/IslamWalid/proxy_server/tree/master/src/safe_io):**
-- It provide safe and re-entrant functions to read and write data to connnection sockets.
+- It provides safe and re-entrant functions to read and write data to connection sockets.
 
 **[`socket_interface`](https://github.com/IslamWalid/proxy_server/tree/master/src/socket_interface):**
 - It provides an abstraction layer above the [standard socket interface library](https://www.gnu.org/software/libc/manual/html_node/Sockets.html) to create TCP sockets.
@@ -66,7 +66,7 @@ browser.
 - It contains two functions:
 
     - `open_client`: establish a client socket connected to a server with the given hostname and port.
-    - `open_server`: creates a listen socket associated with the given port to be ready to recieve TCP connection requests.
+    - `open_server`: creates a listen socket associated with the given port to be ready to receive TCP connection requests.
 
 ## Requirements
 - `linux`
